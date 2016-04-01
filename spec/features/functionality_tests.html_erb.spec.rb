@@ -133,23 +133,17 @@ RSpec.describe "when main page is loaded", :type => :feature, js: true do
       find_link('Вы бизнесмен?').click
       wait_for_ajax
       find(:xpath, "//label[@for='f1_q1_id1']").click # 3 месяца
+      uniq_numbers = ordered_uniq_rand_numbers(3, 1..8)
+      p uniq_numbers
+      random_buttons = []
+      random_buttons <<  "//label[@for='f1_q2_id#{uniq_numbers[0]}']"
+      random_buttons <<  "//label[@for='f1_q2_id#{uniq_numbers[1]}']"
+      random_buttons <<  "//label[@for='f1_q2_id#{uniq_numbers[2]}']"
+      p random_buttons
+      random_buttons.each { |b| find(:xpath, b).click }
+      (1..3).each { |i| page.should have_xpath(eval("random_buttons[#{i-1}]")+("//child::span[text()='#{i}']")) }
+      sleep 5
 
-        
-        3.times { find(:xpath, "//label[@for='f1_q2_id#{rand(8)+1}']").click }
-        page.should have_selector('.input_img_border_checked', :count => 3)
-
-
-        # find(:xpath, "//label[@for='f1_q2_id#{rand(8)+1}']").click 
-        # page.should have_selector('.input_img_border_checked', text: "1")
-
-      # find(:xpath, "//label[@for='f1_q1_id1']").click # 3 месяца
-      # sleep 5
-
-      # find_by_id('#f1_q1_id1').click # 3 месяца
-      # page.choose('f1_q1_id2') # 6 месяцев
-      # page.choose('f1_q1_id3') # 1 год
-      # page.choose('f1_q1_id4') # 1,5-2 года
-      # sleep 5
     end
 
     it 'different types of filling "Buisness" form are works correct' do
