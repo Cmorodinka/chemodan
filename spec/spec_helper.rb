@@ -56,7 +56,7 @@ require 'selenium-webdriver'
 
 ActiveSupport::Deprecation.silenced = true
 
-Faker::Name.name
+
 
 class ActiveSupport::TestCase
   # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
@@ -75,5 +75,6 @@ class ActiveSupport::TestCase
     config.before { allow($stdout).to receive(:puts) } # allow puts inside rspec test - just for better understanding what has happened wrong
     config.include WaitForAjax, type: :feature
     config.include Defs, type: :feature
+    Faker::Config.locale = 'ru'
   end
 end

@@ -189,18 +189,38 @@ RSpec.describe "when main page is loaded", :type => :feature, js: true do
       expect(page).to have_button('Перейти к шагу №2', disabled: true)
       find(:xpath, "//label[@for='f1_q8_id#{rand(1..4)}']").click
       expect(page).to have_button('Перейти к шагу №2', disabled: true)
-      red_button
+      find(:xpath, "//label[@for='f1_q9_id1']").click
+
+      # red_button
 
       # Непонятно ожидаемое поведение  формы при нажатии красной кнопки. Жду ответа разработчика. 
       # Пока что спек будет считать, что красная кнопка - это конец заполнения формы
 
       find(:css, "input[placeholder='Ваш e-mail для ответа адвоката *']").set('xx@xx.xx')
       expect(page).to have_button('Перейти к шагу №2', disabled: true)
-      find(:css, "input[placeholder='Ваше имя для обращения *']").set(name)
+      find(:css, "input[placeholder='Ваше имя для обращения *']").set(@name = Faker::Name.name)
       expect(page).to have_button('Перейти к шагу №2', disabled: false)
-      find(:css, "input[type='submit']").set(name)
+      find(:css, "input[type='submit']").click
       sleep 3
+      find(:xpath, "//input[@value='#{@name}']").native.send_key(:backspace)
+      sleep 1
+      find(:xpath, "//input[@value='xx@xx.xx']").native.send_key(:backspace)
+      sleep 1
+      find(:xpath, "//input[@name='fs2_phone']").set(@phone = Faker::PhoneNumber.cell_phone)
+      find(:xpath, "//input[@name='fs2_skype']").set('xx@xx')
+      find(:xpath, "//input[@name='fs2_country']").set(Faker::Address.country)
+      find(:xpath, "//input[@name='fs2_country_2']").set(Faker::Address.country)
+      find(:xpath, "//label[@for='fs2_q1_id#{rand(1..3)}']").click
+      find(:xpath, "//label[@for='fs2_q2_id#{rand(1..5)}']").click
+      find(:xpath, "//label[@for='fs2_q3_id#{rand(1..4)}']").click
+      find(:xpath, "//input[@name='fs2_q4']").set(Faker::Number.between(1, 12))
+      find(:xpath, "//input[@name='fs2_q5']").set(Faker::Company.profession)
+      find(:xpath, "//input[@name='fs2_q6']").set(Faker::Company.profession)
+      find(:xpath, "//input[@name='fs2_q7']").set(Faker::Number.between(1, 30))
       
+
+      
+
     end
   end
 end
