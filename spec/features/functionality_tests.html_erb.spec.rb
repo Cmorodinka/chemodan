@@ -44,6 +44,15 @@ RSpec.describe "when main page is loaded", :type => :feature, js: true do
         expect(find(:xpath, "//label[@for='#{k}']")).to have_content(v)
       }
 
+      {'f1_q8_id1' => 'до 30', 'f1_q8_id2' => '30 - 40', 'f1_q8_id3' => '40 - 45', 'f1_q8_id4' => 'более 45*'}.each{ |k, v|
+        expect(find(:xpath, "//label[@for='#{k}']")).to have_content(v)
+      }
+
+      {'f1_q9_id1' => 'Да', 'f1_q9_id2' => 'Нет'}.each{ |k, v|
+        expect(find(:xpath, "//label[@for='#{k}']")).to have_content(v)
+      }
+
+
       expect(page).to have_selector("input[placeholder='Ваш e-mail для ответа адвоката *']")
       expect(page).to have_selector("input[placeholder='Ваше имя для обращения *']")
       expect(page).to have_selector('input[type="submit"]')
@@ -129,7 +138,7 @@ RSpec.describe "when main page is loaded", :type => :feature, js: true do
   end
 
   context 'user can choose 1 of 3 types apllication forms' do
-    it 'different combinations of "f*_q2_id*" changes their numbers' do
+    it 'different combinations of "f*_q2_id*" changes their numbers correct' do
       find_link('Вы бизнесмен?').click
       wait_for_ajax
       find(:xpath, "//label[@for='f1_q1_id#{rand(1..4)}']").click # рандомный выбор f1_q1_id*
@@ -159,15 +168,39 @@ RSpec.describe "when main page is loaded", :type => :feature, js: true do
     it 'different types of filling "Buisness" form are works correct' do
       find_link('Вы бизнесмен?').click
       wait_for_ajax
-      find(:xpath, "//label[@for='f1_q1_id1']").click # 3 месяца
-            # find(:xpath, "//label[@for='f1_q1_id1']").click # 3 месяца
-      # sleep 5
+      find(:xpath, "//label[@for='f1_q1_id#{rand(1..4)}']").click 
+      expect(page).to have_button('Перейти к шагу №2', disabled: true)
+        uniq_numbers = ordered_uniq_rand_numbers(3, 1..8)
+        random_buttons = []
+        random_buttons <<  "//label[@for='f1_q2_id#{uniq_numbers[0]}']"
+        random_buttons <<  "//label[@for='f1_q2_id#{uniq_numbers[1]}']"
+        random_buttons <<  "//label[@for='f1_q2_id#{uniq_numbers[2]}']"
+        random_buttons.each { |b| find(:xpath, b).click }
+      expect(page).to have_button('Перейти к шагу №2', disabled: true)
+      find(:xpath, "//label[@for='f1_q3_id#{rand(1..2)}']").click
+      expect(page).to have_button('Перейти к шагу №2', disabled: true)
+      find(:xpath, "//label[@for='f1_q4_id#{rand(1..2)}']").click
+      expect(page).to have_button('Перейти к шагу №2', disabled: true)
+      find(:xpath, "//label[@for='f1_q5_id#{rand(1..3)}']").click
+      expect(page).to have_button('Перейти к шагу №2', disabled: true)
+      find(:xpath, "//label[@for='f1_q6_id#{rand(1..2)}']").click
+      expect(page).to have_button('Перейти к шагу №2', disabled: true)
+      find(:xpath, "//label[@for='f1_q7_id#{rand(1..2)}']").click
+      expect(page).to have_button('Перейти к шагу №2', disabled: true)
+      find(:xpath, "//label[@for='f1_q8_id#{rand(1..4)}']").click
+      expect(page).to have_button('Перейти к шагу №2', disabled: true)
+      red_button
 
-      # find_by_id('#f1_q1_id1').click # 3 месяца
-      # page.choose('f1_q1_id2') # 6 месяцев
-      # page.choose('f1_q1_id3') # 1 год
-      # page.choose('f1_q1_id4') # 1,5-2 года
-      # sleep 5
+      # Непонятно ожидаемое поведение  формы при нажатии красной кнопки. Жду ответа разработчика. 
+      # Пока что спек будет считать, что красная кнопка - это конец заполнения формы
+
+      find(:css, "input[placeholder='Ваш e-mail для ответа адвоката *']").set('xx@xx.xx')
+      expect(page).to have_button('Перейти к шагу №2', disabled: true)
+      find(:css, "input[placeholder='Ваше имя для обращения *']").set(name)
+      expect(page).to have_button('Перейти к шагу №2', disabled: false)
+      find(:css, "input[type='submit']").set(name)
+      sleep 3
+      
     end
   end
 end

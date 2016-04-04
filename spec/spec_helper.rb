@@ -56,6 +56,8 @@ require 'selenium-webdriver'
 
 ActiveSupport::Deprecation.silenced = true
 
+Faker::Name.name
+
 class ActiveSupport::TestCase
   # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
   fixtures :all
