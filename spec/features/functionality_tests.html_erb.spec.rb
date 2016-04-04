@@ -132,18 +132,28 @@ RSpec.describe "when main page is loaded", :type => :feature, js: true do
     it 'different combinations of "f*_q2_id*" changes their numbers' do
       find_link('Вы бизнесмен?').click
       wait_for_ajax
-      find(:xpath, "//label[@for='f1_q1_id1']").click # 3 месяца
+      find(:xpath, "//label[@for='f1_q1_id#{rand(1..4)}']").click # рандомный выбор f1_q1_id*
       uniq_numbers = ordered_uniq_rand_numbers(3, 1..8)
-      p uniq_numbers
+      # p uniq_numbers
       random_buttons = []
       random_buttons <<  "//label[@for='f1_q2_id#{uniq_numbers[0]}']"
       random_buttons <<  "//label[@for='f1_q2_id#{uniq_numbers[1]}']"
       random_buttons <<  "//label[@for='f1_q2_id#{uniq_numbers[2]}']"
-      p random_buttons
+      # p random_buttons
       random_buttons.each { |b| find(:xpath, b).click }
       (1..3).each { |i| page.should have_xpath(eval("random_buttons[#{i-1}]")+("//child::span[text()='#{i}']")) }
-      sleep 5
-
+      page.find(:xpath, random_buttons[0]).click # отжимаем кнопку №1
+      page.should have_xpath(eval("random_buttons[1]")+("//child::span[text()='1']")) # кнопка №2 стала №1
+      page.should have_xpath(eval("random_buttons[2]")+("//child::span[text()='2']")) # кнопка №3 стала №2
+      page.find(:xpath, random_buttons[0]).click # включаем кнопку №1
+      (1..3).each { |i| page.should have_xpath(eval("random_buttons[#{i-1}]")+("//child::span[text()='#{i}']")) }
+      page.find(:xpath, random_buttons[1]).click # отжимаем кнопку №2
+      page.should have_xpath(eval("random_buttons[2]")+("//child::span[text()='2']")) # кнопка №3 стала №2
+      page.find(:xpath, random_buttons[2]).click # отжимаем кнопку №2 (бывшую №3)
+      page.should have_no_xpath(eval("random_buttons[1]")+("//child::span[text()='2']")) # на странице отсутствует кнопка №2
+      page.should have_no_xpath(eval("random_buttons[2]")+("//child::span[text()='3']")) # на странице отсутствует кнопка №3
+      page.find(:xpath, random_buttons[0]).click # отжимаем кнопку №1
+      page.should have_no_xpath(eval("random_buttons[0]")+("//child::span[text()='1']")) # на странице отсутствует кнопка №1
     end
 
     it 'different types of filling "Buisness" form are works correct' do
