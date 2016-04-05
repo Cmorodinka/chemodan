@@ -2,11 +2,12 @@ require 'spec_helper'
 
 RSpec.describe "when main page is loaded", :type => :feature, js: true do
   before(:each) do
-      visit "http://top-emigration.com/emigraciya-v-canadu/"
-      wait_for_ajax
-      { 1 => 'ВЫ БИЗНЕСМЕН?', 2 => 'ВЫ ВЫСОКООПЛАЧИВАЕМЫЙ ТОП-СПЕЦИАЛИСТ?', 3 => 'ВАШ ДОХОД СРЕДНИЙ ИЛИ НИЖЕ СРЕДНЕГО?'}.each{ |k, v|
-        expect(find(:xpath, "//a[@href='#services'][#{k.to_i}]")).to have_content(v)
-      }
+    page.driver.browser.manage.window.maximize
+    visit "http://top-emigration.com/emigraciya-v-canadu/"
+    wait_for_ajax
+    { 1 => 'ВЫ БИЗНЕСМЕН?', 2 => 'ВЫ ВЫСОКООПЛАЧИВАЕМЫЙ ТОП-СПЕЦИАЛИСТ?', 3 => 'ВАШ ДОХОД СРЕДНИЙ ИЛИ НИЖЕ СРЕДНЕГО?'}.each{ |k, v|
+      expect(find(:xpath, "//a[@href='#services'][#{k.to_i}]")).to have_content(v)
+    }
   end
 
   context 'all page components is appear,' do
@@ -207,20 +208,43 @@ RSpec.describe "when main page is loaded", :type => :feature, js: true do
       find(:xpath, "//input[@value='xx@xx.xx']").native.send_key(:backspace)
       sleep 1
       find(:xpath, "//input[@name='fs2_phone']").set(@phone = Faker::PhoneNumber.cell_phone)
-      find(:xpath, "//input[@name='fs2_skype']").set('xx@xx')
+      find(:xpath, "//input[@name='fs2_skype']").set(@skype = 'TestSkype')
+      expect(page).to have_button('Перейти к указанию скайпа', disabled: true)
       find(:xpath, "//input[@name='fs2_country']").set(Faker::Address.country)
       find(:xpath, "//input[@name='fs2_country_2']").set(Faker::Address.country)
       find(:xpath, "//label[@for='fs2_q1_id#{rand(1..3)}']").click
       find(:xpath, "//label[@for='fs2_q2_id#{rand(1..5)}']").click
       find(:xpath, "//label[@for='fs2_q3_id#{rand(1..4)}']").click
       find(:xpath, "//input[@name='fs2_q4']").set(Faker::Number.between(1, 12))
-      find(:xpath, "//input[@name='fs2_q5']").set(Faker::Company.profession)
-      find(:xpath, "//input[@name='fs2_q6']").set(Faker::Company.profession)
-      find(:xpath, "//input[@name='fs2_q7']").set(Faker::Number.between(1, 30))
-      
-
-      
-
+      expect(page).to have_button('Перейти к указанию скайпа', disabled: true)
+      ([5, 6]).each { |i| fill_in "fs2_q#{i}", with: Faker::Company.profession }
+      fill_in "fs2_q7", with: Faker::Number.between(1, 30)
+      # кнопка 'Перейти к указанию скайпа' стала активной
+      expect(page).to have_button('Перейти к указанию скайпа', disabled: false)
+      ([8, 10, 12, 14, 15]).each { |i| fill_in "fs2_q#{i}", with: Faker::Company.profession }
+      ([9, 11, 13]).each { |i| fill_in "fs2_q#{i}", with: Faker::Number.between(1, 30) }
+      ([8, 9, 10, 11, 12, 13, 14, 15]).each { |i| fill_in "fs2_q#{i}", with: '' } # проверка удаления в необязательных полях
+      (16..25).each { |i| check("fs2_q#{i}") } # включить все чебоксы
+      (16..25).each { |i| uncheck("fs2_q#{i}") } # выключить все чебоксы
+      rand(0..9).times{ check("fs2_q#{rand(16..25)}") } # ранд. кол-во раз кликнуть ранд. чекбоксы
+      find(:css, "input[type='submit']").click
+      sleep 6
+      expect(page).to have_xpath("//input[@value='#{@skype}']")
+      find_button('Прошу скайп-встречу').click
+      sleep 1
+      expect(page).to have_content("Запрос отправлен!")
+      expect(page).to have_no_xpath("//input[@value='#{@skype}']")
+      expect(page).to have_no_selector('Прошу скайп-встречу')
+      find(:css, "input[placeholder='Укажите свой электронный адрес']").set('11111111') # проверка валидации эмейла
+      find_button('Прошу уведомлять').click
+      expect(page).to have_content("Неправильный email адрес")
+      find(:xpath, "//img[@src = 'https://login.sendpulse.com/img/delete.gif']").click
+      sleep 1
+      find(:css, "input[placeholder='Укажите свой электронный адрес']").set(Faker::Internet.email)
+      find_button('Прошу уведомлять').click
+      sleep 2
+      expect(page).to have_content("Подтверждение подписки")
+      find(:xpath, "//img[@src = 'https://login.sendpulse.com/img/delete.gif']").click
     end
   end
 end
